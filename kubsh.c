@@ -17,7 +17,19 @@ void sig_handler(int signum){
 	signal_received = signum;
 	printf("Configuration reload");
 }
+void disk_info(char *device){
+	printf("Disk information for %s: \n",device);
 
+	char command[256];
+	snprintf(command, sizeof(command), "sudo fdisk -l %s 2>/dev/null", device);
+
+	int result = system(command);
+
+	if(result != 0){
+		printf("Error: Cannot get disk informationfor %s\n", device);
+		printf("Try running with sudo or check device name\n");
+	}
+}
 int main(){
 	signal(SIGINT, sig_handler);
 	read_history(HISTORY_FILE);
@@ -46,7 +58,10 @@ int main(){
 		break;
 	} else if (strncmp(input, "debug ", 5) == 0){
 	  debug(input);
-	} else {
+	} else if (!strncmp(input, "\\l /dev/sda", 12)){
+			disk_info("/dev/sda");
+	}
+	else {
 	  printf("%s: command not found\n", input);
 	}
 	free(input);
@@ -55,3 +70,4 @@ write_history(HISTORY_FILE);
 return 0;
 }
 
+//Po '\l /dev/sda' infa o diske
