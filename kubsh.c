@@ -1,13 +1,21 @@
+#define FUSE_USE_VERSION 31
+#include <ctype.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include <readline/readline.h>
 #include <readline/history.h>
 
 #define HISTORY_FILE ".kubsh_history"
+
 sig_atomic_t signal_received = 0;
 
 void echo(char *line) {
@@ -17,6 +25,21 @@ void echo(char *line) {
 void sig_handler(int signum) {
 	signal_received = signum;
 	printf("Configuration reloaded");
+}
+
+void fork_exec(char *full_path, int argc, char **argv) {
+  int pid = fork();
+  if (pid == 0) {
+    execv(full_path, argv);
+    perror("execve");
+  } else {
+    int status;
+    waitpid(pid, &status, 0);
+  }
+}
+
+int is_executable(const char *path) {
+  return access(path, X_OK) == 0;
 }
 
 void disk_info(char* device) {
