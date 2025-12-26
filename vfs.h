@@ -1,20 +1,26 @@
 #ifndef VFS_H
 #define VFS_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <pwd.h>
+#include <stddef.h>
 #include <dirent.h>
+#include <sys/stat.h>
+#include <pwd.h>
 
-#define USERS_DIR "/opt/users"
+typedef struct user_info {
+    char *name;
+    uid_t uid;
+    char *home;
+    char *shell;
+} user_info;
 
-void init_users_dir(void);
-void rebuild_users_vfs(void);
-void list_users_vfs(void);
-const char* get_users_dir(void);
-void create_user_files(const struct passwd* pwd);  // Изменено: принимает struct passwd*
+extern user_info users[];
+extern int users_count;
+
+struct user_info* find_user_by_path(const char* path);
+void free_users_list(void);
+
+int start_users_vfs(const char *mount_point);
+void stop_users_vfs(void);
+void rebuild_users_vfs(void);  // Добавлено
 
 #endif
